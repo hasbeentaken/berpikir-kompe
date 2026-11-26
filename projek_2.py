@@ -42,6 +42,37 @@ def cekKosongMotor():
         kosong += 1
   return kosong
 
+def tampilkan(nama, lapangan, antrean):
+  print(f"\n=== Parkiran {nama} ===")
+  for baris in lapangan:
+    print(baris)
+  print("Antrean:", len(antrean))
+  print("Slot kosong:", sum(baris.count(0) for baris in lapangan))
+
+def ubahSlot(lapangan, nilaiBaru):
+  nilaiLama = 1 - nilaiBaru
+
+  if not any(nilaiLama in baris for baris in lapangan):
+    print("Parkiran penuh." if nilaiBaru == 1 else "Parkiran kosong.")
+    return
+
+  while True:
+    try:
+      r = int(input(f"Baris (1-{len(lapangan)}): ")) - 1
+      c = int(input(f"Kolom (1-{len(lapangan[0])}): ")) - 1
+    except ValueError:
+      print("Masukkan angka.")
+      continue
+
+    if not (0 <= r < len(lapangan) and 0 <= c < len(lapangan[0])):
+      print("Slot tidak ada.")
+    elif lapangan[r][c] != nilaiLama:
+      print("Slot sudah terisi." if nilaiBaru == 1 else "Slot itu kosong.")
+    else:
+      lapangan[r][c] = nilaiBaru
+      print("Berhasil.")
+      return
+
 for _ in range(1, random.randint(1,batasSimulasi)):
   os.system("cls" if os.name == "nt" else "clear")
 
@@ -110,20 +141,25 @@ for _ in range(1, random.randint(1,batasSimulasi)):
 
   #time.sleep(0.1)
 
-while KampusBuka:
-  Kegiatan = input("Kendaraan akan masuk atau keluar : ").lower()
-  jenisKendaraan = input("Apa jenis kendaraan yang masuk ke tempat parkir : ").lower()
+parkiran = {
+  "mobil": (lapanganMobil, antreanMobil),
+  "motor": (lapanganMotor, antreanMotor),
+}
 
-  if Kegiatan == "masuk":
-    if jenisKendaraan == "mobil":
-      isiMobil += 1
-    elif jenisKendaraan == "motor":
-      isiMotor += 1
-  elif Kegiatan == "keluar":
-    if jenisKendaraan == "mobil":
-      isiMobil -= 1
-    elif jenisKendaraan == "motor":
-      isiMotor -= 1
-  
-  if input("apakah ada kegiatan lain?").lower() == "tidak":
-    KampusBuka = False
+while True:
+  kegiatan = input("\nKegiatan (masuk/keluar/selesai): ").strip().lower()
+  if kegiatan == "selesai":
+    break
+  if kegiatan not in ("masuk", "keluar"):
+    print("Pilihan tidak valid.")
+    continue
+
+  jenis = input("Jenis kendaraan (mobil/motor): ").strip().lower()
+  if jenis not in parkiran:
+    print("Jenis kendaraan tidak valid.")
+    continue
+
+  lapangan, antrean = parkiran[jenis]
+  tampilkan(jenis, lapangan, antrean)
+  ubahSlot(lapangan, 1 if kegiatan == "masuk" else 0)
+  tampilkan(jenis, lapangan, antrean)
